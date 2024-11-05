@@ -1,0 +1,34 @@
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LinearRegression
+
+# Load data
+df = pd.read_csv("C:/Users/Attilas/Desktop/life-expectancy-hmd-unwpp.csv", encoding='utf-8')
+
+# Filter for Greece and rename columns
+filtered_df = df[df['Entity'] == 'Greece'].drop(columns=['Code'])
+filtered_df = filtered_df.rename(columns={'Life expectancy - Type: period - Sex: both - Age: 0': 'Life Expectancy'})
+filtered_df = filtered_df[['Year', 'Life Expectancy']]  # Keep only relevant columns
+
+# Prepare the data for modeling
+X = filtered_df[['Year']]
+y = filtered_df['Life Expectancy']
+
+# Train the linear regression model
+model = LinearRegression()
+model.fit(X, y)
+
+# Create a DataFrame for future years up to 2030
+future_years = pd.DataFrame({'Year': np.arange(2022, 2031)})
+
+# Make predictions for future years
+future_years['Predicted Life Expectancy'] = model.predict(future_years[['Year']])
+
+# Combine historical and predicted data
+result = pd.concat([filtered_df, future_years.rename(columns={'Predicted Life Expectancy': 'Life Expectancy'})], ignore_index=True)
+
+print(result)
+
+# Save the result DataFrame to a CSV file
+result.to_csv("C:/Users/Attilas/Desktop/greece_life_expectancy_projection.csv", index=False, encoding='utf-8')
+
